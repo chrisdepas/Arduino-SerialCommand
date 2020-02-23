@@ -3,6 +3,10 @@
 #######################################
 
 SerialCommand	KEYWORD1
+CmdRecvFn_t	KEYWORD1
+CmdRecvDefaultFn_t	KEYWORD1
+SerialCmdInstance	KEYWORD1
+SerialCommandBuilder	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

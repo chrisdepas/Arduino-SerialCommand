@@ -2,11 +2,12 @@
  * SerialCommand - A Wiring/Arduino library to tokenize and parse commands
  * received over a serial port.
  * 
+ * Copyright (C) 2019 Christopher De Pasquale
  * Copyright (C) 2012 Stefan Rado
  * Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
  *                    http://husks.wordpress.com
  * 
- * Version 20120522
+ * Version 20191116
  * 
  * This library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,55 +22,139 @@
  * You should have received a copy of the GNU General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SerialCommand_h
-#define SerialCommand_h
+#ifndef __SERIALCOMMAND_H__
+#define __SERIALCOMMAND_H__
 
-#if defined(WIRING) && WIRING >= 100
-  #include <Wiring.h>
-#elif defined(ARDUINO) && ARDUINO >= 100
-  #include <Arduino.h>
-#else
-  #include <WProgram.h>
-#endif
-#include <string.h>
 
-// Size of the input buffer in bytes (maximum length of one command plus arguments)
-#define SERIALCOMMAND_BUFFER 32
-// Maximum length of a command excluding the terminating null
-#define SERIALCOMMAND_MAXCOMMANDLENGTH 8
-
-// Uncomment the next line to run the library in debug mode (verbose messages)
+// To print debug messages, uncomment the following line and
+// ensure that Serial.begin(BAUDRATE) is called in setup()
 //#define SERIALCOMMAND_DEBUG
 
+// Max command length including args (cmd buffer size)
+#define SERIALCOMMAND_BUFFER 32
 
-class SerialCommand {
-  public:
-    SerialCommand();      // Constructor
-    void addCommand(const char *command, void(*function)());  // Add a command to the processing dictionary.
-    void setDefaultHandler(void (*function)(const char *));   // A handler to call when no valid command received.
+#define SERIALCOMMAND_DEFAULT_BUFFER 32
 
-    void readSerial();    // Main entry point.
-    void clearBuffer();   // Clears the input buffer.
-    char *next();         // Returns pointer to next token found in command buffer (for getting arguments to commands).
+// Max command length excluding null terminator and args
+#define SERIALCOMMAND_MAXCOMMANDLENGTH 8
 
-  private:
-    // Command/handler dictionary
-    struct SerialCommandCallback {
-      char command[SERIALCOMMAND_MAXCOMMANDLENGTH + 1];
-      void (*function)();
-    };                                    // Data structure to hold Command/Handler function key-value pairs
-    SerialCommandCallback *commandList;   // Actual definition for command/handler array
-    byte commandCount;
+// Terminator character for a command
+#define SERIALCOMMAND_DEFAULT_TERM '\n'
 
-    // Pointer to the default handler function
-    void (*defaultHandler)(const char *);
+// Null-terminated delimiter between args/cmd (required by strtok_r)
+#define SERIALCOMMAND_DEFAULT_DELIM " "
 
-    char delim[2]; // null-terminated list of character to be used as delimeters for tokenizing (default " ")
-    char term;     // Character that signals end of command (default '\n')
+// Only allow printable characters by default
+#define SERIALCOMMAND_DEFAULT_PRINTABLEONLY true
 
-    char buffer[SERIALCOMMAND_BUFFER + 1]; // Buffer of stored characters while waiting for terminator character
-    byte bufPos;                        // Current position in the buffer
-    char *last;                         // State variable used by strtok_r during processing
+#if defined(WIRING) && WIRING >= 100
+    #include <Wiring.h>
+#elif defined(ARDUINO) && ARDUINO >= 100
+    #include <Arduino.h>
+#else
+    #include <WProgram.h>
+#endif
+#include <string.h>
+#include <Stream.h>
+
+class SerialCommandBuilder;
+
+/**
+ * Interface provided to handler functions. 
+ * Includes next() func to get next arg
+*/
+class SerialCmdInstance {
+
+public:
+
+    /**
+     * Retrieve the next token (word/arg seperated by delimiter) from the 
+     * command buffer. Returns NULL if no more tokens exist.
+     */
+    char *next();
+
+    /** Length of received data (i.e. excludes command str and space) */
+    int dataLen();
 };
 
-#endif //SerialCommand_h
+// Registered command handler callback type
+typedef void (*CmdRecvFn_t)(SerialCmdInstance*);
+
+// Default (i.e. invalid) command handler callback type
+typedef void (*CmdRecvDefaultFn_t)(const char*);
+
+class SerialCommand : public SerialCmdInstance {
+
+    // Represents a registered command & handler pair
+    struct RegisteredCmd {
+        char cmd[SERIALCOMMAND_MAXCOMMANDLENGTH + 1];
+        CmdRecvFn_t handler;
+    };
+
+
+    // Stream from which commands are read
+    const Stream& recvStream;
+
+    RegisteredCmd *cmdList = NULL;
+    byte cmdCount = 0;
+
+    // Pointer to the default handler function
+    CmdRecvDefaultFn_t defaultHandler = NULL;
+
+    // Null-terminated delimiter string between args and cmd
+    const char *delim;
+
+    // Terminator char
+    const char term = SERIALCOMMAND_DEFAULT_TERM;
+
+    // Current command buffer & position
+    char cmdBuf[SERIALCOMMAND_BUFFER + 1];
+    byte bufPos;
+    
+    // State var used by strtok_r
+    char *last = NULL;
+
+    const bool printableOnly;
+
+public:
+	
+    SerialCommand(SerialCommandBuilder& builder);
+    /**
+     * stream       Stream which receives commands
+     * delimiter    Null-terminated delimiter string between command/arguments
+     * terminator   Character representing the end of a command and arguments
+     */
+    SerialCommand(Stream& stream, const char *delimiter, char terminator);
+    SerialCommand(Stream& stream);
+    SerialCommand();
+    
+    /** Register a new command */
+    void addCommand(const char *cmd, CmdRecvFn_t function);
+    
+    /**
+     * Handler to call when an invalid command is received.
+     * Handler must take a const char* argument (the buffer for invalid cmd)
+     */
+    void setDefaultHandler(CmdRecvDefaultFn_t function);
+
+    /**
+     * 'Update' function, should be called each loop()
+     * 
+     * Checks input stream for characters, and assembles them into a buffer.
+     * When the terminator character is seen, it starts parsing the buffer
+     * for a prefix command, and calls matching command handler (registered 
+     * with addCommand())
+     */
+    void readSerial();
+
+    /** Clear all data */
+    void clearBuffer();     
+
+    /**
+     * Retrieve the next token (word/arg seperated by delimiter) from the 
+     * command buffer. Returns NULL if no more tokens exist.
+     */
+    char *next();
+};
+
+#endif

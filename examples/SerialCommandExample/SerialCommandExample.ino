@@ -1,7 +1,8 @@
 // Demo Code for SerialCommand Library
 // Steven Cogswell
 // May 2011
-
+// C De Pasquale
+// Feb 2020
 #include <SerialCommand.h>
 
 #define arduinoLED 13   // Arduino LED on board
@@ -28,19 +29,19 @@ void loop() {
 }
 
 
-void LED_on() {
+void LED_on(SerialCmdInstance*) {
   Serial.println("LED on");
   digitalWrite(arduinoLED, HIGH);
 }
 
-void LED_off() {
+void LED_off(SerialCmdInstance*) {
   Serial.println("LED off");
   digitalWrite(arduinoLED, LOW);
 }
 
-void sayHello() {
+void sayHello(SerialCmdInstance* serialCmd) {
   char *arg;
-  arg = sCmd.next();    // Get the next argument from the SerialCommand object buffer
+  arg = serialCmd->next(); // Get the next argument from the SerialCommand object buffer
   if (arg != NULL) {    // As long as it existed, take it
     Serial.print("Hello ");
     Serial.println(arg);
@@ -51,12 +52,12 @@ void sayHello() {
 }
 
 
-void processCommand() {
+void processCommand(SerialCmdInstance* serialCmd) {
   int aNumber;
   char *arg;
 
   Serial.println("We're in processCommand");
-  arg = sCmd.next();
+  arg = serialCmd->next();
   if (arg != NULL) {
     aNumber = atoi(arg);    // Converts a char string to an integer
     Serial.print("First argument was: ");
@@ -66,7 +67,7 @@ void processCommand() {
     Serial.println("No arguments");
   }
 
-  arg = sCmd.next();
+  arg = serialCmd->next();
   if (arg != NULL) {
     aNumber = atol(arg);
     Serial.print("Second argument was: ");
