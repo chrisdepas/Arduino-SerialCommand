@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+/*
 #include "SerialCommandBuilder.h"
 
 SerialCommandBuilder& SerialCommandBuilder::setStream(Stream& stream) {
@@ -42,4 +42,4 @@ SerialCommandBuilder& SerialCommandBuilder::setPrintableCharsOnly(bool printable
 
 SerialCommand* SerialCommandBuilder::build() {
     return new SerialCommand(this);
-}
+}*/

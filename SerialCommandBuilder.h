@@ -18,8 +18,8 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SERIALCOMMANDBUILDER_H__
-#define __SERIALCOMMANDBUILDER_H__
+//#ifndef __SERIALCOMMANDBUILDER_H__
+//#define __SERIALCOMMANDBUILDER_H__
 /*
 #if defined(WIRING) && WIRING >= 100
     #include <Wiring.h>
@@ -29,6 +29,7 @@
     #include <WProgram.h>
 #endif
 #include <string.h>*/
+/*
 #include <Stream.h>
 #include "SerialCommand.h"
 
@@ -47,18 +48,18 @@ protected:
 
 public:
     /** Set receiving stream, to be read from for commands */
-    SerialCommandBuilder* setStream(Stream& stream);
+    //SerialCommandBuilder* setStream(Stream& stream);
     
-    SerialCommandBuilder* setDelim(const char* delim);
+    //SerialCommandBuilder* setDelim(const char* delim);
     
     /** Set command/arg string terminator character */
-    SerialCommandBuilder* setTerm(char term);
+    //SerialCommandBuilder* setTerm(char term);
 
     /**
      * If set to false, non-printable characters will be parsed.
      * Otherwise, all non-printable characters will be ignored (default behaviour)
      */
-    SerialCommandBuilder* setPrintableCharsOnly(bool printableOnly);
+    //SerialCommandBuilder* setPrintableCharsOnly(bool printableOnly);
 
     /**
      * Create SerialCommand instance using builder options 
@@ -68,7 +69,7 @@ public:
      *  cmdBuilder.setStream(Stream3);
      *  cmd2 = cmdBuilder.build();
      */
-    SerialCommand* build();
-};
+    //SerialCommand* build();
+//};
 
-#endif
+//#endif

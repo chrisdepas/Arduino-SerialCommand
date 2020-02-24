@@ -52,6 +52,15 @@ SerialCommand::SerialCommand(Stream& stream, const char *delimiter, char termina
     clearBuffer();
 }
 
+SerialCommand::SerialCommand(Stream& stream, const char *delimiter, char terminator, bool printableOnly) 
+    : recvStream(stream), 
+      delim(delimiter), 
+      term(terminator),
+      printableOnly(printableOnly) {
+
+    clearBuffer();
+}
+/*
 SerialCommand::SerialCommand(SerialCommandBuilder& builder) : 
     recvStream(builder.stream),
     printableOnly(builder.printableOnly),
@@ -59,7 +68,7 @@ SerialCommand::SerialCommand(SerialCommandBuilder& builder) :
     term(builder.term),
 
 }
-
+*/
 void SerialCommand::addCommand(const char *cmd, CmdRecvFn_t handler) {
   
 #ifdef SERIALCOMMAND_DEBUG

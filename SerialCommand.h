@@ -117,8 +117,18 @@ class SerialCommand : public SerialCmdInstance {
     const bool printableOnly;
 
 public:
-	
+	/*
     SerialCommand(SerialCommandBuilder& builder);
+    */
+    
+    /**
+     * stream           Stream which receives commands
+     * delimiter        Null-terminated delimiter string between command/arguments
+     * terminator       Character representing the end of a command and arguments
+     * printableOnly    If true, only printable chars are added to buffer
+     */
+    SerialCommand(Stream& stream, const char *delimiter, char terminator, bool printableOnly);
+
     /**
      * stream       Stream which receives commands
      * delimiter    Null-terminated delimiter string between command/arguments
